@@ -2,7 +2,7 @@ Write-Host '*** WVD AIB CUSTOMIZER PHASE ***************************************
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Name: Win10ms.ps1 **********************************************'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Description: Customization to build a WVD Windows 10ms image ***'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Version: 0.0.1 *************************************************'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Date: 12 June 2020 *********************************************'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Date: 10 June 2020 *********************************************'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** AUthor: Roel Schellens *****************************************'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Company: Microsoft *********************************************'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE ********************************************************************'
