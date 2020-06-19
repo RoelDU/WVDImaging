@@ -9,7 +9,7 @@ Write-Host '*** WVD AIB CUSTOMIZER PHASE *** https://docs.microsoft.com/en-us/az
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Article: Install Office on a master VHD image                                              ***' 
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** https://docs.microsoft.com/en-us/azure/virtual-desktop/install-office-on-wvd-master-image  ***' 
 Write-Host '*** WVD AIB CUSTOMIZER PHASE ***                                                                                            ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Note: All setting that can be configured through GPO are NOT included   !!!                ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Note: Also consider configuring settings through GPOs !!!                                  ***'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE ***                                                                                            ***'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Version: 0.0.1                                                                             ***'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Date: 19 June 2020                                                                         ***'
