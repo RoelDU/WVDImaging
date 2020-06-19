@@ -1,6 +1,6 @@
 Write-Host '*** WVD AIB CUSTOMIZER PHASE **************************************************************************************************'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE ***                                                                                            ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Script: Win10ms_O365_Apps.ps1                                                                ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Script: Win10ms_O365_Apps.ps1                                                              ***'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE ***                                                                                            ***'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Description: Customization to build a WVD Windows 10ms image                               ***'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** This script configures the Microsoft recommended configuration for a Win10ms image:        ***'
@@ -12,8 +12,8 @@ Write-Host '*** WVD AIB CUSTOMIZER PHASE ***                                    
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Note: All setting that can be configured through GPO are NOT included   !!!                ***'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE ***                                                                                            ***'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Version: 0.0.1                                                                             ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Date: 10 June 2020                                                                         ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Name: Roel Schellens                                                                     ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Date: 19 June 2020                                                                         ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Name: Roel Schellens                                                                       ***'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Company: Microsoft                                                                         ***'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE ***                                                                                            ***'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE **************************************************************************************************'
@@ -21,10 +21,10 @@ Write-Host '*** WVD AIB CUSTOMIZER PHASE ***************************************
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Stop the custimization when Error occurs ***'
 $ErroractionPreference='Stop'
 
-Write-Host '*** Set Variables ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Set Variables ***'
 #NOTE: Make sure to update these variables for your environment!!! ***
-$AADTenantID = "<your-AzureAdTenantId>"
-
+# Note: Only needed when Onedrive needs to be configured (see below). When using the Marketplace Image including Office this is not required.
+#$AADTenantID = "<your-AzureAdTenantId>"
 
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG *** Create temp folder for software packages. ***'
 New-Item -Path 'C:\temp' -ItemType Directory -Force | Out-Null
@@ -54,54 +54,52 @@ Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET REGKEY *** For feedback hub col
 New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection' -Name 'AllowTelemetry' -Value '3' -PropertyType DWORD -Force | Out-Null
 
 # Note: Remove if not required!
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET REGKEYS *** Fix 5k resolution support ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET RDP REGKEYS *** Fix 5k resolution support ***'
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name 'MaxMonitors' -Value '4' -PropertyType DWORD -Force | Out-Null
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name 'MaxXResolution' -Value '5120' -PropertyType DWORD -Force | Out-Null
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name 'MaxYResolution' -Value '2880' -PropertyType DWORD -Force | Out-Null
+New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\rdp-sxs' -Force | Out-Null
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\rdp-sxs' -Name 'MaxMonitors' -Value '4' -PropertyType DWORD -Force | Out-Null
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\rdp-sxs' -Name 'MaxXResolution' -Value '5120' -PropertyType DWORD -Force | Out-Null
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\rdp-sxs' -Name 'MaxYResolution' -Value '2880' -PropertyType DWORD -Force | Out-Null
 
-
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG OFFICE *** Update the default Office behavior ***'
-Write-Host "Mount default registry hive"
+# Note: It is recommended to set user settings through GPO's.
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG OFFICE RegKeys *** Update the default Office behavior ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG OFFICE Regkeys *** Mount default registry hive ***'
 & REG LOAD HKLM\DEFAULT C:\Users\Default\NTUSER.DAT
-Push-Location 'TempDefault\SOFTWARE\Policies\Microsoft\office\16.0\common'
-if (!(Test-Path Main)) {
-  Write-Warning "Adding missing default keys for IE"
-  New-Item Main
-}
-#STILL WORKING ON THIS !!!! https://gist.github.com/goyuix/fd68db59a4f6355ee0f6
-reg add HKU\TempDefault\SOFTWARE\Policies\Microsoft\office\16.0\common /v TempDefault\SOFTWARE\Policies\Microsoft\office\16.0\common /t REG_DWORD /d 2 /f
-rem Set Outlook's Cached Exchange Mode behavior
-rem Must be executed with default registry hive mounted.
-reg add "HKU\TempDefault\software\policies\microsoft\office\16.0\outlook\cached mode" /v enable /t REG_DWORD /d 1 /f
-reg add "HKU\TempDefault\software\policies\microsoft\office\16.0\outlook\cached mode" /v syncwindowsetting /t REG_DWORD /d 1 /f
-reg add "HKU\TempDefault\software\policies\microsoft\office\16.0\outlook\cached mode" /v CalendarSyncWindowSetting /t REG_DWORD /d 1 /f
-reg add "HKU\TempDefault\software\policies\microsoft\office\16.0\outlook\cached mode" /v CalendarSyncWindowSettingMonths  /t REG_DWORD /d 1 /f
-rem Unmount the default user registry hive
-reg unload HKU\TempDefault
+Start-Sleep -Seconds 2
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG OFFICE *** Set InsiderSlabBehavior ***'
+New-Item -Path 'HKLM:\DEFAULT\SOFTWARE\Policies\Microsoft\office\16.0\common' -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\DEFAULT\SOFTWARE\Policies\Microsoft\office\16.0\common' -Name 'InsiderSlabBehavior' -Value '2' -PropertyType DWORD -Force | Out-Null
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG OFFICE *** Set Outlooks Cached Exchange Mode behavior ***'
+New-ItemProperty -Path 'HKLM:\DEFAULT\software\policies\microsoft\office\16.0\outlook\cached mode' -Name 'enable' -Value '1' -PropertyType DWORD -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\DEFAULT\software\policies\microsoft\office\16.0\outlook\cached mode' -Name 'syncwindowsetting' -Value '1' -PropertyType DWORD -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\DEFAULT\software\policies\microsoft\office\16.0\outlook\cached mode' -Name 'CalendarSyncWindowSetting' -Value '1' -PropertyType DWORD -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\DEFAULT\software\policies\microsoft\office\16.0\outlook\cached mode' -Name 'CalendarSyncWindowSettingMonths' -Value '1' -PropertyType DWORD -Force | Out-Null
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG OFFICE Regkeys *** Un-mount default registry hive ***'
+& REG UNLOAD HKLM\DEFAULT
+Start-Sleep -Seconds 5
 
-rem Set the Office Update UI behavior.
-reg add HKLM\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate /v hideupdatenotifications /t REG_DWORD /d 1 /f
-reg add HKLM\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate /v hideenabledisableupdates /t REG_DWORD /d 1 /f
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG OFFICE Regkeys *** Set Office Update Notifiations behavior ***'
+New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate' -Name 'hideupdatenotifications' -Value '1' -PropertyType DWORD -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\office\16.0\common\officeupdate' -Name 'hideenabledisableupdates' -Value '1' -PropertyType DWORD -Force | Out-Null
 
-
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** INSTALL ONEDRIVE *** Uninstall Ondrive per-user mode and Install OneDrive in per-machine mode ***'
-Invoke-WebRequest -Uri 'https://aka.ms/OneDriveWVD-Installer' -OutFile 'c:\temp\OneDriveSetup.exe'
-New-Item -Path 'HKLM:\Software\Microsoft\OneDrive' -Force | Out-Null
-Start-Sleep -Seconds 10
-Invoke-Expression -Command 'C:\temp\OneDriveSetup.exe /uninstall'
-New-ItemProperty -Path 'HKLM:\Software\Microsoft\OneDrive' -Name 'AllUsersInstall' -Value '1' -PropertyType DWORD -Force | Out-Null
-Start-Sleep -Seconds 10
-Invoke-Expression -Command 'C:\temp\OneDriveSetup.exe /allusers'
-Start-Sleep -Seconds 10
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG ONEDRIVE *** Configure OneDrive to start at sign in for all users. ***'
-New-ItemProperty -Path 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Run' -Name 'OneDrive' -Value 'C:\Program Files (x86)\Microsoft OneDrive\OneDrive.exe /background' -Force | Out-Null
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG ONEDRIVE *** Silently configure user account ***'
-New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive' -Name 'SilentAccountConfig' -Value '1' -PropertyType DWORD -Force | Out-Null
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG ONEDRIVE *** Redirect and move Windows known folders to OneDrive by running the following command. ***'
-New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive' -Name 'KFMSilentOptIn' -Value $AADTenantID -Force | Out-Null
+# Note: When using the Marketplace Image for Windows 10 Enterprise Multu Session with Office Onedrive is already installed correctly (for 20H1). 
+# Write-Host '*** WVD AIB CUSTOMIZER PHASE *** INSTALL ONEDRIVE *** Uninstall Ondrive per-user mode and Install OneDrive in per-machine mode ***'
+# Invoke-WebRequest -Uri 'https://aka.ms/OneDriveWVD-Installer' -OutFile 'c:\temp\OneDriveSetup.exe'
+# New-Item -Path 'HKLM:\Software\Microsoft\OneDrive' -Force | Out-Null
+# Start-Sleep -Seconds 10
+# Invoke-Expression -Command 'C:\temp\OneDriveSetup.exe /uninstall'
+# New-ItemProperty -Path 'HKLM:\Software\Microsoft\OneDrive' -Name 'AllUsersInstall' -Value '1' -PropertyType DWORD -Force | Out-Null
+# Start-Sleep -Seconds 10
+# Invoke-Expression -Command 'C:\temp\OneDriveSetup.exe /allusers'
+# Start-Sleep -Seconds 10
+# Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG ONEDRIVE *** Configure OneDrive to start at sign in for all users. ***'
+# New-ItemProperty -Path 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Run' -Name 'OneDrive' -Value 'C:\Program Files (x86)\Microsoft OneDrive\OneDrive.exe /background' -Force | Out-Null
+# Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG ONEDRIVE *** Silently configure user account ***'
+# New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive' -Name 'SilentAccountConfig' -Value '1' -PropertyType DWORD -Force | Out-Null
+# Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG ONEDRIVE *** Redirect and move Windows known folders to OneDrive by running the following command. ***'
+# New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive' -Name 'KFMSilentOptIn' -Value $AADTenantID -Force | Out-Null
 
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** INSTALL *** Install C++ Redist for RTCSvc (Teams Optimized) ***'
 Invoke-WebRequest -Uri 'https://aka.ms/vs/16/release/vc_redist.x64.exe' -OutFile 'c:\temp\vc_redist.x64.exe'
@@ -121,8 +119,6 @@ Invoke-Expression -Command 'msiexec /i C:\temp\Teams.msi /quiet /l*v C:\temp\tea
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG TEAMS *** Configure Teams to start at sign in for all users. ***'
 New-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run -Name Teams -PropertyType Binary -Value ([byte[]](0x01,0x00,0x00,0x00,0x1a,0x19,0xc3,0xb9,0x62,0x69,0xd5,0x01)) -Force
 Start-Sleep -Seconds 30
-
-
 
 
 Write-Host '*** WVD AIB Customize phase ********************* END *************************'
