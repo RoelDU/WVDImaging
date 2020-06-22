@@ -1,20 +1,33 @@
+<#  
+.SYNOPSIS  
+    Custimization script for Azure Image Builder including Microsoft recommneded configuration to be included in a Windows 10 ms Master Image including Office
+.
+.DESCRIPTION  
+    Customization script to build a WVD Windows 10ms image
+    This script configures the Microsoft recommended configuration for a Win10ms image:
+        Article:    Prepare and customize a master VHD image 
+                    https://docs.microsoft.com/en-us/azure/virtual-desktop/set-up-customize-master-image 
+        Article: Install Office on a master VHD image 
+                    https://docs.microsoft.com/en-us/azure/virtual-desktop/install-office-on-wvd-master-image
+.
+NOTES  
+    File Name  : Win10ms_O365.ps1
+    Author     : Roel Schellens
+    Version    : v0.0.1
+.
+.EXAMPLE
+    This script can be used in confuction with an 
+.
+.DISCLAIMER
+    1 - All configuration settings in this script need to be validated and tested in your own environment.
+    2 - Ensure to confirm the documentation online has not been updated and therefor might include different settings
+    3 - Where possible also the use of Group Policies can be used.
+    4 - The below script uses the Write-Host command to allow you to better troubleshoot the activity from within the Packer logs.
+#>
+
 Write-Host '*** WVD AIB CUSTOMIZER PHASE **************************************************************************************************'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE ***                                                                                            ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Script: Win10ms_O365_Apps.ps1                                                              ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE ***                                                                                            ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Description: Customization to build a WVD Windows 10ms image                               ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** This script configures the Microsoft recommended configuration for a Win10ms image:        ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Article: Prepare and customize a master VHD image                                          ***' 
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** https://docs.microsoft.com/en-us/azure/virtual-desktop/set-up-customize-master-image       ***' 
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Article: Install Office on a master VHD image                                              ***' 
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** https://docs.microsoft.com/en-us/azure/virtual-desktop/install-office-on-wvd-master-image  ***' 
-Write-Host '*** WVD AIB CUSTOMIZER PHASE ***                                                                                            ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Note: Also consider configuring settings through GPOs !!!                                  ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE ***                                                                                            ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Version: 0.0.1                                                                             ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Date: 19 June 2020                                                                         ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Name: Roel Schellens                                                                       ***'
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Company: Microsoft                                                                         ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Script: Win10ms_O365.ps1                                                                   ***'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE ***                                                                                            ***'
 Write-Host '*** WVD AIB CUSTOMIZER PHASE **************************************************************************************************'
 
