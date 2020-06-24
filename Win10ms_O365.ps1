@@ -92,6 +92,7 @@ New-ItemProperty -Path 'HKLM:\DEFAULT\software\policies\microsoft\office\16.0\ou
 New-ItemProperty -Path 'HKLM:\DEFAULT\software\policies\microsoft\office\16.0\outlook\cached mode' -Name 'CalendarSyncWindowSetting' -Value '1' -PropertyType DWORD -Force | Out-Null
 New-ItemProperty -Path 'HKLM:\DEFAULT\software\policies\microsoft\office\16.0\outlook\cached mode' -Name 'CalendarSyncWindowSettingMonths' -Value '1' -PropertyType DWORD -Force | Out-Null
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG OFFICE Regkeys *** Un-mount default registry hive ***'
+Start-Sleep -Seconds 5
 & REG UNLOAD HKLM\DEFAULT
 Start-Sleep -Seconds 5
 
