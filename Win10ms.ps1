@@ -21,6 +21,7 @@ NOTES
     2 - Ensure to confirm the documentation online has not been updated and therefor might include different settings
     3 - Where possible also the use of Group Policies can be used.
     4 - The below script uses the Write-Host command to allow you to better troubleshoot the activity from within the Packer logs.
+    5 - To get more verbose logging of the script remove the | Out-Null at the end of the PowerShell command
 #>
 
 Write-Host '*** WVD AIB CUSTOMIZER PHASE **************************************************************************************************'
@@ -32,7 +33,7 @@ Write-Host '*** WVD AIB CUSTOMIZER PHASE ***************************************
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Stop the custimization when Error occurs ***'
 $ErroractionPreference='Stop'
 
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Set Variables ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Set Custimization Script Variables ***'
 #NOTE: Make sure to update these variables for your environment!!! ***
 # None required.
 
@@ -46,25 +47,26 @@ Expand-Archive -Path 'C:\temp\fslogix.zip' -DestinationPath 'C:\temp\fslogix\'  
 Invoke-Expression -Command 'C:\temp\fslogix\x64\Release\FSLogixAppsSetup.exe /install /quiet /norestart'
 Start-Sleep -Seconds 10
 
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET REGKEY *** Disable Automatic Updates ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** START OS CONFIG *** Update the recommended OS configuration ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET OS REGKEY *** Disable Automatic Updates ***'
 New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name 'NoAutoUpdate' -Value '1' -PropertyType DWORD -Force | Out-Null
 
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET REGKEY *** Specify Start layout for Windows 10 PCs (optional) ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET OS REGKEY *** Specify Start layout for Windows 10 PCs (optional) ***'
 New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer' -Name 'SpecialRoamingOverrideAllowed' -Value '1' -PropertyType DWORD -Force | Out-Null
 
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET REGKEY *** Set up time zone redirection ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET OS REGKEY *** Set up time zone redirection ***'
 New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services' -Name 'fEnableTimeZoneRedirection' -Value '1' -PropertyType DWORD -Force | Out-Null
 
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET REGKEY *** Disable Storage Sense ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET OS REGKEY *** Disable Storage Sense ***'
 # reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy" /v 01 /t REG_DWORD /d 0 /f
 New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageSense' -Name 'AllowStorageSenseGlobal' -Value '0' -PropertyType DWORD -Force | Out-Null
 
 # Note: Remove if not required!
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET REGKEY *** For feedback hub collection of telemetry data on Windows 10 Enterprise multi-session ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET OS REGKEY *** For feedback hub collection of telemetry data on Windows 10 Enterprise multi-session ***'
 New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection' -Name 'AllowTelemetry' -Value '3' -PropertyType DWORD -Force | Out-Null
 
 # Note: Remove if not required!
-Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET RDP REGKEYS *** Fix 5k resolution support ***'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET OS REGKEYS *** Fix 5k resolution support ***'
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name 'MaxMonitors' -Value '4' -PropertyType DWORD -Force | Out-Null
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name 'MaxXResolution' -Value '5120' -PropertyType DWORD -Force | Out-Null
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name 'MaxYResolution' -Value '2880' -PropertyType DWORD -Force | Out-Null
@@ -73,4 +75,4 @@ New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\W
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\rdp-sxs' -Name 'MaxXResolution' -Value '5120' -PropertyType DWORD -Force | Out-Null
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\rdp-sxs' -Name 'MaxYResolution' -Value '2880' -PropertyType DWORD -Force | Out-Null
 
-Write-Host '*** WVD AIB Customize phase ********************* END *************************'
+Write-Host '*** WWVD AIB CUSTOMIZER PHASE ********************* END *************************'
