@@ -78,4 +78,8 @@ New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\W
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET OS REGKEY *** Temp fix for 20H1 SXS Bug ***'
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\rdp-sxs' -Name 'fReverseConnectMode' -Value '1' -PropertyType DWORD -Force | Out-Null
 
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG *** Deleting temp folder. ***'
+Get-ChildItem -Path 'C:\temp' -Recurse | Remove-Item -Recurse -Force
+Remove-Item -Path 'C:\temp' -Force | Out-Null
+
 Write-Host '*** WWVD AIB CUSTOMIZER PHASE ********************* END *************************'
