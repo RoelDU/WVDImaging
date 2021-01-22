@@ -13,7 +13,8 @@
 NOTES  
     File Name  : Win10ms.ps1
     Author     : Roel Schellens
-    Version    : v0.0.1
+    Version    : v0.0.2
+    Date       : 20-Jan-2021
 .
 .EXAMPLE
     This script can be used in confuction with an 
