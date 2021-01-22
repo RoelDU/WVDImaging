@@ -7,6 +7,8 @@
     This script configures the Microsoft recommended configuration for a Win10ms image:
         Article:    Prepare and customize a master VHD image 
                     https://docs.microsoft.com/en-us/azure/virtual-desktop/set-up-customize-master-image 
+        Article: Set up MSIX app attach with the Azure portal
+                    https://docs.microsoft.com/en-us/azure/virtual-desktop/app-attach-azure-portal
 .
 NOTES  
     File Name  : Win10ms.ps1
@@ -34,8 +36,10 @@ Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Stop the custimization when Error o
 $ErroractionPreference='Stop'
 
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** Set Custimization Script Variables ***'
-#NOTE: Make sure to update these variables for your environment!!! ***
+# NOTE: Make sure to update these variables for your environment!!! ***
 # None required.
+
+# WINDOWS SECTION
 
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CONFIG *** Create temp folder for software packages. ***'
 New-Item -Path 'C:\temp' -ItemType Directory -Force | Out-Null
@@ -55,6 +59,7 @@ Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET OS REGKEY *** Specify Start lay
 New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer' -Name 'SpecialRoamingOverrideAllowed' -Value '1' -PropertyType DWORD -Force | Out-Null
 
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET OS REGKEY *** Set up time zone redirection ***'
+# Note: Time zone redirection can be enforced on Group Policy level since all VMs in a host pool are part of the same security group.
 New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services' -Name 'fEnableTimeZoneRedirection' -Value '1' -PropertyType DWORD -Force | Out-Null
 
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET OS REGKEY *** Disable Storage Sense ***'
@@ -65,6 +70,9 @@ New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\StorageS
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET OS REGKEY *** For feedback hub collection of telemetry data on Windows 10 Enterprise multi-session ***'
 New-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection' -Name 'AllowTelemetry' -Value '3' -PropertyType DWORD -Force | Out-Null
 
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET OS REGKEY *** Fix Watson crashes ***'
+Invoke-Expression -Command 'remove CorporateWerServer* from Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting'
+
 # Note: Remove if not required!
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET OS REGKEYS *** Fix 5k resolution support ***'
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name 'MaxMonitors' -Value '4' -PropertyType DWORD -Force | Out-Null
@@ -74,6 +82,24 @@ New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStatio
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\rdp-sxs' -Name 'MaxMonitors' -Value '4' -PropertyType DWORD -Force | Out-Null
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\rdp-sxs' -Name 'MaxXResolution' -Value '5120' -PropertyType DWORD -Force | Out-Null
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\rdp-sxs' -Name 'MaxYResolution' -Value '2880' -PropertyType DWORD -Force | Out-Null
+
+# Note: Remove if not required!
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET MSIX APPATTACH REGKEYS *** Disable Store auto update ***'
+New-Item -Path 'HKLM:\Software\Policies\Microsoft\WindowsStore' -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\WindowsStore' -Name 'AutoDownload' -Value '0' -PropertyType DWORD -Force | Out-Null
+Invoke-Expression -Command 'Schtasks /Change /Tn "\Microsoft\Windows\WindowsUpdate\Scheduled Start" /Disable'
+Invoke-Expression -Command 'Schtasks /Change /Tn "\Microsoft\Windows\WindowsUpdate\Scheduled Start" /Disable'
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET MSIX APPATTACH REGKEYS *** Disable Content Delivery auto download apps that they want to promote to users'
+New-Item -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager\Debug' -Force | Out-Null
+New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager\Debug' -Name 'ContentDeliveryAllowedOverride' -Value 0x2 -PropertyType DWORD -Force | Out-Null
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET MSIX APPATTACH REGKEYS *** Mount default registry hive ***'
+& REG LOAD HKLM\DEFAULT C:\Users\Default\NTUSER.DAT
+Start-Sleep -Seconds 5
+New-ItemProperty -Path 'HKLM:\DEFAULT\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'PreInstalledAppsEnabled' -Value '0' -PropertyType DWORD -Force | Out-Null
+Write-Host '*** WVD AIB CUSTOMIZER PHASE *** CSET MSIX APPATTACH REGKEYS *** Un-mount default registry hive ***'
+[GC]::Collect()
+& REG UNLOAD HKLM\DEFAULT
+Start-Sleep -Seconds 5
 
 Write-Host '*** WVD AIB CUSTOMIZER PHASE *** SET OS REGKEY *** Temp fix for 20H1 SXS Bug ***'
 New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\rdp-sxs' -Name 'fReverseConnectMode' -Value '1' -PropertyType DWORD -Force | Out-Null
